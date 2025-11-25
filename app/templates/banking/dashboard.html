@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Dashboard</h2>
+{% if current_user.role == 'customer' %}
+<h4>My Accounts</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account #</th>
+            <th>Type</th>
+            <th>Balance</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for acc in accounts %}
+        <tr>
+            <td>{{ acc.account_number }}</td>
+            <td>{{ acc.type }}</td>
+            <td>${{ acc.balance }}</td>
+            <td>{{ acc.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('banking.open_account') }}" class="btn btn-primary">Open Account</a>
+<a href="{{ url_for('banking.transfer_internal') }}" class="btn btn-secondary">Internal Transfer</a>
+<a href="{{ url_for('banking.transfer_external') }}" class="btn btn-success">External Transfer</a>
+<a href="{{ url_for('banking.transactions_list') }}" class="btn btn-info">View Transactions</a>
+<h4 class="mt-4">Recent Transactions</h4>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Sender Acc</th>
+            <th>Receiver Acc</th>
+            <th>Amount</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ t.sender_account_id }}</td>
+            <td>{{ t.receiver_account_id }}</td>
+            <td>${{ t.amount }}</td>
+            <td>{{ t.type }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Welcome {{ current_user.full_name }}. You are logged in as <strong>{{ current_user.role }}</strong>.</p>
+{% if current_user.role == 'support' or current_user.role == 'admin' %}
+<a href="{{ url_for('support.tickets_list') }}" class="btn btn-primary">Support Tickets</a>
+{% endif %}
+{% if current_user.role == 'auditor' or current_user.role == 'admin' %}
+<a href="{{ url_for('audit.logs_list') }}" class="btn btn-secondary">Audit Logs</a>
+{% endif %}
+{% endif %}
+{% endblock %}

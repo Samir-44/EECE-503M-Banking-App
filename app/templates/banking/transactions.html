@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Transactions</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Sender Acc</th>
+            <th>Receiver Acc</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ t.sender_account_id or 'N/A' }}</td>
+            <td>{{ t.receiver_account_id or 'N/A' }}</td>
+            <td>${{ t.amount }}</td>
+            <td>{{ t.type }}</td>
+            <td>{{ t.description or '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,8 @@
+flask
+flask_sqlalchemy
+flask_migrate
+flask_login
+flask_wtf
+email-validator
+python-dotenv
+argon2-cffi
