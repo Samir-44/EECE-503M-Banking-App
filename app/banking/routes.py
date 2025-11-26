@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from . import banking_bp
-from .forms import OpenAccountForm, InternalTransferForm, ExternalTransferForm
+from .forms import OpenAccountForm, InternalTransferForm, ExternalTransferForm, EditUserForm
 from ..extensions import db
 from ..models import Account, Transaction, User
 from ..security import roles_required, log_event
@@ -155,3 +155,72 @@ def transactions_list():
     # admin/auditor view omitted complex filters for brevity
     txs = Transaction.query.order_by(Transaction.timestamp.desc()).limit(200).all()
     return render_template('banking/transactions.html', transactions=txs)
+
+
+# Admin routes
+@banking_bp.route('/admin/users')
+@login_required
+@roles_required('admin')
+def admin_users():
+    users = User.query.all()
+    return render_template('banking/admin_users.html', users=users)
+
+
+@banking_bp.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@roles_required('admin')
+def admin_edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = EditUserForm(obj=user)
+    if form.validate_on_submit():
+        # Prevent admin from changing their own role
+        if user.id == current_user.id and form.role.data != 'admin':
+            flash('Cannot change your own admin role', 'danger')
+            return redirect(url_for('banking.admin_edit_user', user_id=user_id))
+        
+        old_role = user.role
+        user.full_name = form.full_name.data.strip()
+        user.email = form.email.data.lower().strip()
+        user.phone = form.phone.data
+        user.role = form.role.data
+        user.is_active = form.is_active.data
+        db.session.commit()
+        
+        if old_role != user.role:
+            log_event('ROLE_CHANGED', f'user_id={user.id} from={old_role} to={user.role}')
+        log_event('USER_UPDATED', f'user_id={user.id} by_admin={current_user.id}')
+        flash('User updated successfully', 'success')
+        return redirect(url_for('banking.admin_users'))
+    return render_template('banking/admin_edit_user.html', form=form, user=user)
+
+
+@banking_bp.route('/admin/accounts')
+@login_required
+@roles_required('admin')
+def admin_accounts():
+    accounts = Account.query.all()
+    return render_template('banking/admin_accounts.html', accounts=accounts)
+
+
+@banking_bp.route('/admin/accounts/<int:account_id>/freeze', methods=['POST'])
+@login_required
+@roles_required('admin')
+def admin_freeze_account(account_id):
+    account = Account.query.get_or_404(account_id)
+    account.status = 'frozen'
+    db.session.commit()
+    log_event('ACCOUNT_FROZEN', f'account={account.account_number} by_admin={current_user.id}')
+    flash(f'Account {account.account_number} frozen', 'success')
+    return redirect(url_for('banking.admin_accounts'))
+
+
+@banking_bp.route('/admin/accounts/<int:account_id>/unfreeze', methods=['POST'])
+@login_required
+@roles_required('admin')
+def admin_unfreeze_account(account_id):
+    account = Account.query.get_or_404(account_id)
+    account.status = 'active'
+    db.session.commit()
+    log_event('ACCOUNT_UNFROZEN', f'account={account.account_number} by_admin={current_user.id}')
+    flash(f'Account {account.account_number} unfrozen', 'success')
+    return redirect(url_for('banking.admin_accounts'))

@@ -16,7 +16,40 @@ with app.app_context():
         )
         admin.set_password("Admin123!")
         db.session.add(admin)
-        db.session.commit()
         print("✓ Admin user created: admin@example.com / Admin123!")
     else:
         print("✓ Admin user already exists: admin@example.com")
+    
+    # Check if support agent exists
+    support = User.query.filter_by(email="support@example.com").first()
+    if not support:
+        support = User(
+            full_name="Support Agent",
+            email="support@example.com",
+            phone="555-2000",
+            role="support",
+            is_active=True
+        )
+        support.set_password("Support123!")
+        db.session.add(support)
+        print("✓ Support agent created: support@example.com / Support123!")
+    else:
+        print("✓ Support agent already exists: support@example.com")
+    
+    # Check if auditor exists
+    auditor = User.query.filter_by(email="auditor@example.com").first()
+    if not auditor:
+        auditor = User(
+            full_name="Auditor User",
+            email="auditor@example.com",
+            phone="555-3000",
+            role="auditor",
+            is_active=True
+        )
+        auditor.set_password("Auditor123!")
+        db.session.add(auditor)
+        print("✓ Auditor created: auditor@example.com / Auditor123!")
+    else:
+        print("✓ Auditor already exists: auditor@example.com")
+    
+    db.session.commit()

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Account Management</h2>
+<p class="text-muted">Manage all accounts in the system</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account #</th>
+            <th>Owner</th>
+            <th>Type</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts %}
+        <tr>
+            <td>{{ account.account_number }}</td>
+            <td>{{ account.owner.full_name }} ({{ account.owner.email }})</td>
+            <td>{{ account.type }}</td>
+            <td>${{ account.balance }}</td>
+            <td>
+                {% if account.status == 'active' %}
+                <span class="badge bg-success">Active</span>
+                {% elif account.status == 'frozen' %}
+                <span class="badge bg-warning">Frozen</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ account.status }}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if account.status == 'active' %}
+                <form method="post" action="{{ url_for('banking.admin_freeze_account', account_id=account.id) }}"
+                    style="display:inline;">
+                    {{ csrf_token() }}
+                    <button type="submit" class="btn btn-sm btn-warning"
+                        onclick="return confirm('Freeze this account?')">Freeze</button>
+                </form>
+                {% elif account.status == 'frozen' %}
+                <form method="post" action="{{ url_for('banking.admin_unfreeze_account', account_id=account.id) }}"
+                    style="display:inline;">
+                    {{ csrf_token() }}
+                    <button type="submit" class="btn btn-sm btn-success"
+                        onclick="return confirm('Unfreeze this account?')">Unfreeze</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

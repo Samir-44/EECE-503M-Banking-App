@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import DecimalField, SelectField, StringField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, NumberRange
+from wtforms import DecimalField, SelectField, StringField, TextAreaField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, NumberRange, Email, Length
 
 
 class OpenAccountForm(FlaskForm):
@@ -28,3 +28,12 @@ class ExternalTransferForm(FlaskForm):
 class TransactionsFilterForm(FlaskForm):
     # Simple placeholder; filters via querystring in routes
     submit = SubmitField('Filter')
+
+
+class EditUserForm(FlaskForm):
+    full_name = StringField('Full name', validators=[DataRequired(), Length(max=128)])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=255)])
+    phone = StringField('Phone', validators=[Length(max=32)])
+    role = SelectField('Role', choices=[('customer', 'Customer'), ('support', 'Support'), ('auditor', 'Auditor'), ('admin', 'Admin')], validators=[DataRequired()])
+    is_active = BooleanField('Active')
+    submit = SubmitField('Save Changes')

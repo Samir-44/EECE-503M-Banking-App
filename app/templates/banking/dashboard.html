@@ -52,6 +52,13 @@
 </table>
 {% else %}
 <p>Welcome {{ current_user.full_name }}. You are logged in as <strong>{{ current_user.role }}</strong>.</p>
+{% if current_user.role == 'admin' %}
+<div class="mb-3">
+    <h4>Admin Controls</h4>
+    <a href="{{ url_for('banking.admin_users') }}" class="btn btn-primary">Manage Users</a>
+    <a href="{{ url_for('banking.admin_accounts') }}" class="btn btn-warning">Manage Accounts</a>
+</div>
+{% endif %}
 {% if current_user.role == 'support' or current_user.role == 'admin' %}
 <a href="{{ url_for('support.tickets_list') }}" class="btn btn-primary">Support Tickets</a>
 {% endif %}
